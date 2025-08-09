@@ -1,0 +1,116 @@
+
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — 3D-Print Store (Demo)</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar"><div class="brand">Admin — 3D-Print Store</div><nav><a href="index.html">Shop</a></nav></header>
+  <main class="container">
+    <section class="admin-panel">
+      <h2>Admin Login</h2>
+      <div id="loginBox" class="card">
+        <p class="small">Passwort eingeben, um Bestellungen zu sehen.</p>
+        <input id="adminPw" placeholder="Admin Passwort" type="password">
+        <div style="margin-top:8px"><button id="adminLogin">Anmelden</button></div>
+        <div id="loginMsg" class="small"></div>
+      </div>
+
+      <div id="ordersPanel" style="display:none">
+        <h3>Bestellungen</h3>
+        <div class="small">Hinweis: Daten werden lokal im Browser gespeichert (localStorage). Demo‑Passwort: <code>chat5test</code></div>
+        <div style="margin-top:8px">
+          <button id="refreshOrders">Aktualisieren</button>
+          <button id="exportCsv">Export CSV</button>
+          <button id="clearOrders">Alle löschen</button>
+        </div>
+        <div id="ordersList" style="margin-top:12px"></div>
+      </div>
+    </section>
+  </main>
+
+<script>
+// Very small admin script embedded for simplicity.
+// Password is compared client-side (DEMO ONLY). Real apps must use a server-side auth.
+const ADMIN_PASSWORD = "chat5test";
+document.getElementById("adminLogin").addEventListener("click", ()=>{
+  const val = document.getElementById("adminPw").value;
+  const msg = document.getElementById("loginMsg");
+  if(val === ADMIN_PASSWORD){
+    msg.textContent = "Erfolgreich angemeldet.";
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("ordersPanel").style.display = "block";
+    loadOrders();
+  } else {
+    msg.textContent = "Falsches Passwort.";
+  }
+});
+
+function loadOrders(){
+  const raw = localStorage.getItem("shop_orders_v1") || "[]";
+  let orders = JSON.parse(raw);
+  const container = document.getElementById("ordersList");
+  container.innerHTML = "";
+  if(orders.length===0){ container.innerHTML = "<div class='small'>Keine Bestellungen.</div>"; return; }
+  orders.slice().reverse().forEach(o=>{
+    const div = document.createElement("div");
+    div.className = "card order";
+    div.innerHTML = `<div style="display:flex;justify-content:space-between">
+      <div><strong>${o.id}</strong> — ${o.name} • ${o.email}<div class="small">${new Date(o.date).toLocaleString()}</div></div>
+      <div style="text-align:right"><div class="small">Gesamt: ${o.total}</div><div class="small">Status: <strong>${o.status||'neu'}</strong></div></div>
+    </div>
+    <div style="margin-top:8px"><em>Artikel:</em>
+      <ul>${Object.keys(o.items).map(id=>`<li>${id} × ${o.items[id]}</li>`).join('')}</ul></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button data-id="${o.id}" class="markShipped">Als versendet markieren</button>
+      <button data-id="${o.id}" class="deleteOrder">Löschen</button>
+    </div>`;
+    container.appendChild(div);
+  });
+
+  // bind actions
+  document.querySelectorAll(".markShipped").forEach(b=>b.addEventListener("click", e=>{
+    const id = e.target.dataset.id; updateOrderStatus(id, "versendet"); loadOrders();
+  }));
+  document.querySelectorAll(".deleteOrder").forEach(b=>b.addEventListener("click", e=>{
+    const id = e.target.dataset.id; deleteOrder(id); loadOrders();
+  }));
+}
+
+function updateOrderStatus(id, status){
+  const raw = localStorage.getItem("shop_orders_v1") || "[]";
+  let orders = JSON.parse(raw);
+  orders = orders.map(o=> o.id===id ? {...o, status} : o);
+  localStorage.setItem("shop_orders_v1", JSON.stringify(orders));
+}
+
+function deleteOrder(id){
+  const raw = localStorage.getItem("shop_orders_v1") || "[]";
+  let orders = JSON.parse(raw);
+  orders = orders.filter(o=> o.id !== id);
+  localStorage.setItem("shop_orders_v1", JSON.stringify(orders));
+}
+
+document.getElementById("refreshOrders").addEventListener("click", loadOrders);
+document.getElementById("clearOrders").addEventListener("click", ()=>{ if(confirm('Alle Bestellungen löschen?')){ localStorage.removeItem('shop_orders_v1'); loadOrders(); }});
+document.getElementById("exportCsv").addEventListener("click", ()=>{
+  const raw = localStorage.getItem("shop_orders_v1") || "[]";
+  let orders = JSON.parse(raw);
+  if(orders.length===0){ alert('Keine Bestellungen.'); return; }
+  let csv = 'id,name,email,date,total,status,items\n';
+  orders.forEach(o=>{
+    const items = Object.keys(o.items).map(k=>k+':'+o.items[k]).join('|');
+    csv += [o.id, `"${o.name}"`, o.email, o.date, o.total, o.status||'', `"${items}"`].join(',') + '\n';
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'orders.csv'; a.click();
+  URL.revokeObjectURL(url);
+});
+</script>
+
+</body>
+</html>

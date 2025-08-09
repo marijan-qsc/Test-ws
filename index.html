@@ -1,0 +1,72 @@
+
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>3D-Print Store — Demo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">3D-Print Store</div>
+    <nav>
+      <a href="#" id="link-products">Produkte</a>
+      <a href="#" id="link-about">Über uns</a>
+      <a href="admin.html">Admin</a>
+      <button id="cartBtn" class="cartBtn">Warenkorb (<span id="cartCount">0</span>)</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Professionelle 3D‑Drucke — schnell & nachhaltig</h1>
+      <p>Demo‑Shop im Shopify‑Style. Testbestellungen sind simuliert — keine echten Zahlungen.</p>
+      <div class="cta"><button id="shopNow">Jetzt shoppen</button></div>
+    </section>
+
+    <section id="catalog" class="catalog"></section>
+  </main>
+
+  <!-- Cart Drawer -->
+  <aside id="cartDrawer" class="cart-drawer" aria-hidden="true">
+    <div class="cart-head">
+      <h3>Warenkorb</h3>
+      <button id="closeCart">✕</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-footer">
+      <div class="total">Gesamt: <strong id="totalPrice">0,00 €</strong></div>
+      <div class="actions">
+        <button id="clearCart">Leeren</button>
+        <button id="checkout">Zur Kasse</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Checkout modal -->
+  <div id="checkoutModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <h3>Checkout</h3>
+      <form id="checkoutForm">
+        <label>Name<input id="custName" required></label>
+        <label>E‑Mail<input id="custEmail" type="email" required></label>
+        <label>Adresse<input id="custAddress" required></label>
+        <div class="note small">Dies ist eine Demo. Zahlung wird nicht verarbeitet.</div>
+        <div class="modal-actions">
+          <button type="button" id="cancelCheckout">Abbrechen</button>
+          <button type="submit" id="placeOrder">Bestellung absenden</button>
+        </div>
+      </form>
+      <div id="checkoutMsg" class="small"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div>© 2025 3D-Print Store — Demo</div>
+    <div class="small">Kostenloser Versand ab 50€ (Demo)</div>
+  </footer>
+
+<script src="js/shop.js"></script>
+</body>
+</html>
